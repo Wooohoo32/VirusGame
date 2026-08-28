@@ -18,19 +18,30 @@ public class PopUpManager : MonoBehaviour
     private GameObject topBar;
     private GameObject closeButton;
 
+    private Transform popUpParent;
+
     //Mouse info.
     private bool clickDown;
     private bool clickHeld;
     private bool clickUp;
 
+    private bool connected;
+
+    public GameObject downloadedApp;
+
     Bounds cursor;
+
+    public GameObject nextConvoPrefab;
 
     // Start is called before the first frame update
     void Start()
     {
         //Find all gameObjects.
         topBar = transform.Find("PopUpTopBar").gameObject;
-        closeButton = transform.Find("CloseButton").gameObject;
+        closeButton = topBar.transform.Find("CloseButton").gameObject;
+        popUpParent = transform.parent;
+
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
     // Update is called once per frame
@@ -64,12 +75,15 @@ public class PopUpManager : MonoBehaviour
         if(touchingTopBar && clickDown && emptyCursor)
         {
             transform.parent = gameManager.cursor;
+            connected = true;
         }
 
         //If mouse button up, disconnect.
-        if(touchingTopBar && clickUp)
+        if(connected && clickUp)
         {
-            transform.parent = null;
+            popUpParent.transform.position = transform.position;
+            transform.parent = popUpParent;
+            connected = false;
         }
     }
 
@@ -77,6 +91,36 @@ public class PopUpManager : MonoBehaviour
     {
         bool touchingCloseButton = cursor.Intersects(closeButton.GetComponent<SpriteRenderer>().bounds);
 
-        if (clickDown && touchingCloseButton) Destroy(gameObject);
+        if (clickDown && touchingCloseButton)
+        {
+            //The first step is to disconnect - it'll be dragging the top bar ahh hell
+            popUpParent.transform.position = transform.position;
+            transform.parent = popUpParent;
+            connected = false;
+
+            Animator animator = popUpParent.GetComponent<Animator>();
+            animator.Play("Close");
+            Destroy(popUpParent.gameObject, animator.GetCurrentAnimatorStateInfo(0).length);
+        }
+    }
+
+    public void DownloadPressed()
+    {
+        //The first step is to disconnect - it'll be dragging the top bar ahh hell
+        popUpParent.transform.position = transform.position;
+        transform.parent = popUpParent;
+        connected = false;
+
+        Animator animator = popUpParent.GetComponent<Animator>();
+        animator.Play("Close");
+        Destroy(popUpParent.gameObject, animator.GetCurrentAnimatorStateInfo(0).length);
+
+
+        if(nextConvoPrefab != null) gameManager.SpawnSecondDialog(nextConvoPrefab);
+        else if (downloadedApp != null)
+        {
+            //thbffffft
+            downloadedApp.SetActive(true);
+        }
     }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,7 +17,9 @@ public class GameManager : MonoBehaviour
     public int hp = 100; //How many files you have left.
     public int progress = 0; //How complete the antivirus installation is.
 
-
+    //For help messages
+    public Animator helpAnimator;
+    public TextMeshPro helpText;
     
 
     // Start is called before the first frame update
@@ -39,7 +43,58 @@ public class GameManager : MonoBehaviour
         cursor.position = mousePos;
     }
 
+    public void SpawnSecondDialog(GameObject prefab)
+    {
+        StartCoroutine(DialogDelay(prefab));
+    }
+    private IEnumerator DialogDelay(GameObject prefab)
+    {
+        yield return new WaitForSeconds(3);
+        Vector2 offset = new(Random.Range(-2f, 2f), Random.Range(-2f, 2f));
+        Instantiate(prefab, offset, Quaternion.identity);
+    }
 
+    public void DoHelpMessage(string message, float time)
+    {
+        //Spawns in a help message for a certain amount of time.
+
+        //The animation takes 0.5s to appear and 0.5s to disappear. We will spawn it, wait x time, and despawn it.
+
+        helpText.text = message;
+        StartCoroutine(HelpMessageTimer(time));
+    }
+
+    private IEnumerator HelpMessageTimer(float time)
+    {
+        helpAnimator.Play("Open");
+        yield return new WaitForSeconds(time + helpAnimator.GetCurrentAnimatorStateInfo(0).length);
+        helpAnimator.Play("Close");
+    }
+
+    public void SpawnMinigame(int minigameNumber)
+    {
+        if(minigameNumber == 1)
+        {
+            print("spawn minigame 1 one the first");
+            //for now im just gonna spawn the next bit here for the video im sending chen
+            EndMinigame(1);
+        }
+        else if (minigameNumber == 2)
+        {
+            print("spawn minigame 2 two the second");
+        }
+    }
+
+
+    public GameObject minigame1EndObject;
+    public void EndMinigame(int minigameNumber)
+    {
+        if(minigameNumber == 1)
+        {
+            print("spawn next thing (google browser thing)");
+            minigame1EndObject.SetActive(true);
+        }
+    }
 
     /*This is a struct I made to store some simple info about each minigame. 
     With this we could:
